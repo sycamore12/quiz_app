@@ -1,4 +1,6 @@
+// In lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:quiz_app/screens/welcome_screen.dart'; // Import the new screen
 
 void main() {
   runApp(const MyApp());
@@ -11,18 +13,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Quiz App',
-      // Set the theme for the entire app
       theme: ThemeData(
-        fontFamily: 'Montserrat', // Our custom font
+        fontFamily: 'Montserrat',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // We'll create this WelcomeScreen in the next step
-      home: const Scaffold(
-        body: Center(
-          child: Text("Welcome Screen placeholder"),
-        ),
-      ),
+      home: const WelcomeScreen(), // Set WelcomeScreen as the home
     );
   }
 }
