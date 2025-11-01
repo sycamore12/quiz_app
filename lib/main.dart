@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Kuis Bentar',
       theme: ThemeData(
-        fontFamily: 'Montserrat',
+        fontFamily: 'Outfit',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
