@@ -3,8 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app/data/dummy_questions.dart';
 import 'package:quiz_app/widgets/answer_button.dart';
-// We'll create results_screen.dart in the next step
-// import 'package:quiz_app/screens/results_screen.dart';
+import 'package:quiz_app/screens/results_screen.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key, required this.userName});
@@ -22,25 +21,30 @@ class _QuizScreenState extends State<QuizScreen> {
   final List<String> _selectedAnswers = [];
 
   void _answerQuestion(String selectedAnswer) {
-    // Record the answer
-    _selectedAnswers.add(selectedAnswer);
+  // Record the answer (This is the part you already have)
+  _selectedAnswers.add(selectedAnswer);
 
-    // Check if the quiz is over
-    if (_selectedAnswers.length == questions.length) {
-      // ---
-      // TODO: Navigate to Results Screen
-      // For now, we'll just print to the console
-      print('Quiz is complete!');
-      print('User: ${widget.userName}');
-      print('Answers: $_selectedAnswers');
-      // ---
-    } else {
-      // Go to the next question
-      setState(() {
-        _currentQuestionIndex++;
-      });
-    }
+  // --- ADD THIS LOGIC BELOW ---
+
+  // Check if the quiz is over
+  if (_selectedAnswers.length == questions.length) {
+    // Quiz is over, navigate to results screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultsScreen(
+          userName: widget.userName,
+          chosenAnswers: _selectedAnswers,
+        ),
+      ),
+    );
+  } else {
+    // Go to the next question
+    setState(() {
+      _currentQuestionIndex++;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
