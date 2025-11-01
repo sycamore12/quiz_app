@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-// We'll create quiz_screen.dart later
-// import 'package:quiz_app/screens/quiz_screen.dart';
+import 'package:quiz_app/screens/quiz_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -16,19 +15,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   // A key to validate the form
   final _formKey = GlobalKey<FormState>();
 
-  void _startQuiz() {
-    // Validate the form. If it's valid, proceed.
-    if (_formKey.currentState!.validate()) {
-      // Placeholder for navigation
-      print("Starting quiz for: ${_nameController.text}");
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => QuizScreen(userName: _nameController.text),
-      //   ),
-      // );
-    }
+  // In lib/screens/welcome_screen.dart
+
+void _startQuiz() {
+  // Validate the form. If it's valid, proceed.
+  if (_formKey.currentState!.validate()) {
+    final userName = _nameController.text;
+
+    // Use pushReplacement to navigate without a "back" button
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuizScreen(userName: userName), // Pass the name
+      ),
+    );
   }
+}
 
   @override
   void dispose() {
