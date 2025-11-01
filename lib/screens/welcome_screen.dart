@@ -39,24 +39,35 @@ void _startQuiz() {
     super.dispose();
   }
 
+  // In lib/screens/welcome_screen.dart
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        // Use a LayoutBuilder to make UI dynamic (Requirement #6)
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               child: Padding(
-                // Use a percentage of screen width for padding
                 padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.1),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // --- ADD THIS WIDGET ---
+                      Image.asset(
+                        'assets/images/quiz_logo.png',
+                        // Use a portion of the screen height
+                        height: constraints.maxHeight * 0.3,
+                        // Add a semantic label for screen readers
+                        semanticLabel: 'Quiz Logo',
+                      ),
+                      const SizedBox(height: 20),
+                      // --- END OF ADDED WIDGET ---
+
                       const Text(
-                        'Welcome to the Quiz!',
+                        'Welcome to Kuis Bentar!', // <-- Updated text
                         style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
