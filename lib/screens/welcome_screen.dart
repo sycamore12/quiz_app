@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:quiz_app/screens/quiz_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  const WelcomeScreen({super.key});
+  // 1. Accept the theme controls
+  const WelcomeScreen({
+    super.key,
+    required this.currentTheme,
+    required this.onThemeToggle,
+  });
+
+  final ThemeMode currentTheme;
+  final void Function(ThemeMode) onThemeToggle;
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  // Controller to manage the text field's input
   final _nameController = TextEditingController();
-
-  // A key to validate the form
   final _formKey = GlobalKey<FormState>();
 
   void _startQuiz() {
-    // Validate the form. If it's valid, proceed.
     if (_formKey.currentState!.validate()) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          // Pass the name to the QuizScreen again
           builder: (context) => QuizScreen(userName: _nameController.text),
         ),
       );
@@ -30,14 +33,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   void dispose() {
-    // Clean up the controller
     _nameController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // --- 1. Define gradient colors from your Figma ---
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     
     final Color startColor =
@@ -45,14 +46,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final Color endColor =
         isDark ? const Color(0xFF000000) : const Color(0xFF660F24);
 
-    // --- 2. Define logo asset based on theme ---
     final String logoAsset = isDark
-        ? 'assets/images/quiz_logo.png' // Original logo for dark theme
-        : 'assets/images/quiz_logo_white.png'; // White logo for light theme
+        ? 'assets/images/quiz_logo.png' 
+        : 'assets/images/quiz_logo_white.png';
 
     return Scaffold(
       body: Container(
-        // --- 3. Apply the gradient background ---
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [startColor, endColor],
@@ -60,95 +59,151 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: Center(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: Padding(
-                  // Use a percentage of screen width for padding
-                  padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.1),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // --- 4. The Theme-Aware Logo ---
-                        Image.asset(
-                          logoAsset,
-                          height: constraints.maxHeight * 0.3,
-                          semanticLabel: 'Quiz Logo',
-                        ),
-                        const SizedBox(height: 20),
+        // 2. Use a Stack to layer the toggle over the content
+        child: Stack(
+          children: [
+            // --- 3. Your original centered content ---
+            Center(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: constraints.maxWidth * 0.1),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              logoAsset,
+                              height: constraints.maxHeight * 0.3,
+                              semanticLabel: 'Quiz Logo',
+                            ),
+                            const SizedBox(height: 20),
 
-                        const Text(
-                          'Welcome to Kuis Bentar!',
-                          // --- 5. Style text to be visible on gradient ---
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 40),
+                            const Text(
+                              'Welcome to Kuis Bentar!',
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 40),
 
-                        // --- 6. Style TextFormField to be visible ---
-                        TextFormField(
-                          controller: _nameController,
-                          style: const TextStyle(color: Colors.white), // Input text
-                          decoration: InputDecoration(
-                            labelText: 'Enter your name',
-                            labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                            // White border
-                            enabledBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white54),
+                            TextFormField(
+                              controller: _nameController,
+                              style: const TextStyle(color: Colors.white), 
+                              decoration: InputDecoration(
+                                labelText: 'Enter your name',
+                                labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                                enabledBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white54),
+                                ),
+                                focusedBorder: const OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                errorStyle: TextStyle(color: Colors.yellow.shade300),
+                                errorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.yellow.shade300),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.yellow.shade300, width: 2),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter your name';
+                                }
+                                return null;
+                              },
                             ),
-                            // White border when focused
-                            focusedBorder: const OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
+                            const SizedBox(height: 20),
+                            
+                            ElevatedButton(
+                              onPressed: _startQuiz,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                                textStyle: const TextStyle(
+                                  fontSize: 18,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              child: const Text('Start Quiz'),
                             ),
-                            // Error text style
-                            errorStyle: TextStyle(color: Colors.yellow.shade300),
-                            // Error border
-                            errorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.yellow.shade300),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.yellow.shade300, width: 2),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your name';
-                            }
-                            return null;
-                          },
+                          ],
                         ),
-                        const SizedBox(height: 20),
-                        
-                        // --- 7. Style Button ---
-                        ElevatedButton(
-                          onPressed: _startQuiz,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          child: const Text('Start Quiz'),
-                        ),
-                      ],
+                      ),
                     ),
+                  );
+                },
+              ),
+            ),
+
+            // --- 4. The new Theme Toggle Button ---
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: _ThemeToggleButton(
+                    currentTheme: widget.currentTheme,
+                    onThemeToggle: widget.onThemeToggle,
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+// --- 5. Helper Widget for the Toggle ---
+class _ThemeToggleButton extends StatelessWidget {
+  const _ThemeToggleButton({
+    required this.currentTheme,
+    required this.onThemeToggle,
+  });
+
+  final ThemeMode currentTheme;
+  final void Function(ThemeMode) onThemeToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: ToggleButtons(
+        // The order is: Light, System, Dark
+        isSelected: [
+          currentTheme == ThemeMode.light,
+          currentTheme == ThemeMode.system,
+          currentTheme == ThemeMode.dark,
+        ],
+        onPressed: (index) {
+          // Find the new mode based on which button was tapped
+          final mode = [ThemeMode.light, ThemeMode.system, ThemeMode.dark][index];
+          onThemeToggle(mode);
+        },
+        borderRadius: BorderRadius.circular(100),
+        selectedColor: Colors.black, // Icon color when selected
+        color: Colors.white.withOpacity(0.7), // Icon color when not selected
+        fillColor: Colors.white, // Background color when selected
+        splashColor: Colors.white.withOpacity(0.2),
+        constraints: const BoxConstraints(minHeight: 36, minWidth: 40),
+        children: const [
+          Icon(Icons.wb_sunny_outlined, size: 20),
+          Icon(Icons.brightness_auto_outlined, size: 20),
+          Icon(Icons.nightlight_outlined, size: 20),
+        ],
       ),
     );
   }

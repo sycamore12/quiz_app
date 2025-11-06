@@ -10,8 +10,25 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+// 1. Convert to StatefulWidget
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  // 2. Add state to hold the current theme mode
+  // We start with ThemeMode.system, which you liked.
+  ThemeMode _themeMode = ThemeMode.system;
+
+  // 3. Add a function to change the theme
+  void _setThemeMode(ThemeMode mode) {
+    setState(() {
+      _themeMode = mode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,11 +92,14 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
-      // Use the phone's system setting automatically
-      themeMode: ThemeMode.system,
+      // 4. Use the state variable to control the theme
+      themeMode: _themeMode,
 
-      // Start at the WelcomeScreen
-      home: const WelcomeScreen(),
+      // 5. Pass the function and current state to WelcomeScreen
+      home: WelcomeScreen(
+        currentTheme: _themeMode,
+        onThemeToggle: _setThemeMode,
+      ),
     );
   }
 }

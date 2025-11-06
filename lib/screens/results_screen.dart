@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quiz_app/data/dummy_questions.dart';
 import 'package:quiz_app/screens/welcome_screen.dart';
 import 'package:quiz_app/widgets/summary_item.dart';
+import 'package:quiz_app/main.dart';
 
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({
@@ -84,11 +85,11 @@ class ResultsScreen extends StatelessWidget {
 
                   TextButton.icon(
                     onPressed: () {
-                      // 3. Fix Restart button to go to WelcomeScreen
+                      // 3. Restart the MyApp widget to pass theme state
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const WelcomeScreen(),
+                          builder: (context) => const MyApp(),
                         ),
                         (route) => false,
                       );
