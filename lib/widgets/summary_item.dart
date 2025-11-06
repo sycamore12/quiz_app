@@ -4,12 +4,22 @@ import 'package:quiz_app/widgets/question_identifier.dart';
 class SummaryItem extends StatelessWidget {
   const SummaryItem(this.itemData, {super.key});
 
-  // We'll pass a Map with all the data for a single question
   final Map<String, Object> itemData;
 
   @override
   Widget build(BuildContext context) {
     final isCorrect = itemData['user_answer'] == itemData['correct_answer'];
+    final theme = Theme.of(context);
+    final onBackgroundColor = theme.colorScheme.onBackground;
+
+    // --- FIX: Define text colors based on theme brightness ---
+    final Color correctAnswerColor = theme.brightness == Brightness.light
+        ? Colors.cyan.shade700  // Dark cyan for light mode
+        : Colors.cyan.shade100; // Light cyan for dark mode
+
+    final Color wrongAnswerColor = theme.brightness == Brightness.light
+        ? Colors.pink.shade700   // Dark pink for light mode
+        : Colors.pink.shade100;  // Light pink for dark mode
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -21,15 +31,14 @@ class SummaryItem extends StatelessWidget {
             isCorrect: isCorrect,
           ),
           const SizedBox(width: 20),
-          // Expanded allows the Column to take all remaining horizontal space
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   itemData['question_text'] as String,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: onBackgroundColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -38,13 +47,13 @@ class SummaryItem extends StatelessWidget {
                 Text(
                   'Your answer: ${itemData['user_answer'] as String}',
                   style: TextStyle(
-                    color: Colors.pink.shade100,
+                    color: isCorrect ? correctAnswerColor : wrongAnswerColor,
                   ),
                 ),
                 Text(
                   'Correct answer: ${itemData['correct_answer'] as String}',
                   style: TextStyle(
-                    color: Colors.cyan.shade100,
+                    color: correctAnswerColor,
                   ),
                 ),
               ],
