@@ -17,26 +17,20 @@ class _QuizScreenState extends State<QuizScreen> {
   final List<String> _userAnswers = [];
   String? _selectedAnswer;
 
-  // --- 1. THIS IS THE FIX ---
-  // We'll store the shuffled list here so it doesn't change on rebuild
   late List<String> _currentShuffledAnswers;
 
-  // --- 2. INITIALIZE THE LIST ---
   @override
   void initState() {
     super.initState();
-    // Get the shuffled answers for the *first* question
     _currentShuffledAnswers = questions[_currentQuestionIndex].getShuffledAnswers();
   }
 
-  // This just locks in the answer
   void _answerQuestion(String selectedAnswer) {
     setState(() {
       _selectedAnswer = selectedAnswer;
     });
   }
 
-  // This moves to the next question or ends the quiz
   void _nextQuestion() {
     if (_selectedAnswer == null) return;
 
@@ -53,12 +47,9 @@ class _QuizScreenState extends State<QuizScreen> {
         ),
       );
     } else {
-      // Go to next question
       setState(() {
         _currentQuestionIndex++;
-        _selectedAnswer = null; // Reset for the new question
-
-        // --- 3. GET NEW LIST FOR NEXT QUESTION ---
+        _selectedAnswer = null; 
         _currentShuffledAnswers = questions[_currentQuestionIndex].getShuffledAnswers();
       });
     }
@@ -66,7 +57,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // We still need currentQuestion to check the *correct* answer
     final currentQuestion = questions[_currentQuestionIndex];
     final bool isAnswered = _selectedAnswer != null;
     final theme = Theme.of(context);
@@ -76,82 +66,90 @@ class _QuizScreenState extends State<QuizScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // --- TOP BAR: Progress ---
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Text(
-                  '${_currentQuestionIndex + 1} of ${questions.length}',
-                  style: TextStyle(
-                    color: theme.colorScheme.onBackground.withOpacity(0.8),
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              LinearProgressIndicator(
-                value: (_currentQuestionIndex + 1) / questions.length,
-                backgroundColor: Colors.grey.withOpacity(0.2),
-                color: Colors.green.shade400,
-                minHeight: 6,
-                borderRadius: BorderRadius.circular(100),
-              ),
-              const Spacer(flex: 1),
-
-              // --- QUESTION CARD ---
-              Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // --- Question Text ---
-                    Text(
-                      currentQuestion.text,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
+          
+          // --- 1. WRAP THE COLUMN WITH SingleChildScrollView ---
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // --- TOP BAR: Progress ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Text(
+                    '${_currentQuestionIndex + 1} of ${questions.length}',
+                    style: TextStyle(
+                      color: theme.colorScheme.onBackground.withOpacity(0.8),
+                      fontSize: 16,
                     ),
-                    const SizedBox(height: 30),
-
-                    // --- 4. USE THE "FROZEN" LIST ---
-                    ..._currentShuffledAnswers.map((answer) {
-                      final isCorrect = answer == currentQuestion.answers[0];
-                      final isSelected = answer == _selectedAnswer;
-                      return AnswerButton(
-                        answerText: answer,
-                        isSelected: isSelected,
-                        isCorrect: isCorrect,
-                        isAnswered: isAnswered,
-                        onTap: () => _answerQuestion(answer),
-                      );
-                    }),
-
-                    // --- "Next" Button (Conditional) ---
-                    if (isAnswered)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: ElevatedButton(
-                          onPressed: _nextQuestion,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                          ),
-                          child: const Text('Next'),
-                        ),
-                      ),
-                  ],
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-              const Spacer(flex: 2),
-            ],
+                LinearProgressIndicator(
+                  value: (_currentQuestionIndex + 1) / questions.length,
+                  backgroundColor: Colors.grey.withOpacity(0.2),
+                  color: Colors.green.shade400,
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                
+                // --- 2. REPLACE Spacer WITH SizedBox ---
+                const SizedBox(height: 30),
+
+                // --- QUESTION CARD ---
+                Container(
+                  padding: const EdgeInsets.all(24.0),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // --- Question Text ---
+                      Text(
+                        currentQuestion.text,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 30),
+
+                      // --- Answer Buttons ---
+                      ..._currentShuffledAnswers.map((answer) {
+                        final isCorrect = answer == currentQuestion.answers[0];
+                        final isSelected = answer == _selectedAnswer;
+                        return AnswerButton(
+                          answerText: answer,
+                          isSelected: isSelected,
+                          isCorrect: isCorrect,
+                          isAnswered: isAnswered,
+                          onTap: () => _answerQuestion(answer),
+                        );
+                      }),
+
+                      // --- "Next" Button (Conditional) ---
+                      if (isAnswered)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: ElevatedButton(
+                            onPressed: _nextQuestion,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                            ),
+                            child: const Text('Next'),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                
+                // --- 3. REPLACE Spacer WITH SizedBox FOR BOTTOM PADDING ---
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),
