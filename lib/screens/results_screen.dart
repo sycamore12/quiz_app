@@ -6,6 +6,7 @@ import 'package:quiz_app/widgets/summary_item.dart';
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({
     super.key,
+    // 1. Add userName back
     required this.userName,
     required this.chosenAnswers,
   });
@@ -13,7 +14,6 @@ class ResultsScreen extends StatelessWidget {
   final String userName;
   final List<String> chosenAnswers;
 
-  // A helper method (getter) to process the answers
   List<Map<String, Object>> get summaryData {
     final List<Map<String, Object>> summary = [];
 
@@ -21,16 +21,14 @@ class ResultsScreen extends StatelessWidget {
       summary.add({
         'question_index': i,
         'question_text': questions[i].text,
-        'correct_answer': questions[i].answers[0], // 0 is always correct
+        'correct_answer': questions[i].answers[0], 
         'user_answer': chosenAnswers[i]
       });
     }
     return summary;
   }
 
-  // A helper to calculate the score
   int get numCorrectAnswers {
-    // We can use the summaryData we just generated
     return summaryData.where((data) {
       return data['user_answer'] == data['correct_answer'];
     }).length;
@@ -39,78 +37,72 @@ class ResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final numTotalQuestions = questions.length;
+    final theme = Theme.of(context); 
 
     return Scaffold(
-      body: Container(
-        // Same gradient as the quiz screen for consistency
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.deepPurple.shade800, Colors.deepPurple.shade500],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Container(
-                width: constraints.maxWidth * 0.9, // 90% of screen width
-                height: constraints.maxHeight * 0.8, // 80% of screen height
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Congrats, $userName!',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
+      backgroundColor: theme.colorScheme.background,
+      body: Center(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              width: constraints.maxWidth * 0.9,
+              height: constraints.maxHeight * 0.8,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 2. Restore userName text
+                  Text(
+                    'Congrats, $userName!',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'You answered $numCorrectAnswers out of $numTotalQuestions questions correctly!',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 18,
-      
-                      ),
-                      textAlign: TextAlign.center,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'You answered $numCorrectAnswers out of $numTotalQuestions questions correctly!',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 18,
                     ),
-                    const SizedBox(height: 30),
-                    // The scrollable summary list
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: summaryData.map((data) {
-                            return SummaryItem(data);
-                          }).toList(),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
+                  
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: summaryData.map((data) {
+                          return SummaryItem(data);
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  TextButton.icon(
+                    onPressed: () {
+                      // 3. Fix Restart button to go to WelcomeScreen
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WelcomeScreen(),
                         ),
-                      ),
+                        (route) => false,
+                      );
+                    },
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    label: const Text(
+                      'Restart Quiz',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
-                    const SizedBox(height: 30),
-                    TextButton.icon(
-                      onPressed: () {
-                        // Navigate back to the Welcome Screen to restart
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const WelcomeScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.refresh, color: Colors.white),
-                      label: const Text(
-                        'Restart Quiz',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    )
-                  ],
-                ),
-              );
-            },
-          ),
+                  )
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
