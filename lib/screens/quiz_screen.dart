@@ -4,7 +4,6 @@ import 'package:quiz_app/screens/results_screen.dart';
 import 'package:quiz_app/widgets/answer_button.dart';
 
 class QuizScreen extends StatefulWidget {
-  // 1. Add userName back
   const QuizScreen({super.key, required this.userName});
 
   final String userName;
@@ -16,17 +15,30 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   var _currentQuestionIndex = 0;
   final List<String> _userAnswers = [];
-  
   String? _selectedAnswer;
 
+  // --- 1. THIS IS THE FIX ---
+  // We'll store the shuffled list here so it doesn't change on rebuild
+  late List<String> _currentShuffledAnswers;
+
+  // --- 2. INITIALIZE THE LIST ---
+  @override
+  void initState() {
+    super.initState();
+    // Get the shuffled answers for the *first* question
+    _currentShuffledAnswers = questions[_currentQuestionIndex].getShuffledAnswers();
+  }
+
+  // This just locks in the answer
   void _answerQuestion(String selectedAnswer) {
     setState(() {
       _selectedAnswer = selectedAnswer;
     });
   }
 
+  // This moves to the next question or ends the quiz
   void _nextQuestion() {
-    if (_selectedAnswer == null) return; 
+    if (_selectedAnswer == null) return;
 
     _userAnswers.add(_selectedAnswer!);
 
@@ -35,22 +47,26 @@ class _QuizScreenState extends State<QuizScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => ResultsScreen(
-            // 2. Pass userName to ResultsScreen
-            userName: widget.userName, 
+            userName: widget.userName,
             chosenAnswers: _userAnswers,
           ),
         ),
       );
     } else {
+      // Go to next question
       setState(() {
         _currentQuestionIndex++;
-        _selectedAnswer = null; 
+        _selectedAnswer = null; // Reset for the new question
+
+        // --- 3. GET NEW LIST FOR NEXT QUESTION ---
+        _currentShuffledAnswers = questions[_currentQuestionIndex].getShuffledAnswers();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // We still need currentQuestion to check the *correct* answer
     final currentQuestion = questions[_currentQuestionIndex];
     final bool isAnswered = _selectedAnswer != null;
     final theme = Theme.of(context);
@@ -63,6 +79,7 @@ class _QuizScreenState extends State<QuizScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // --- TOP BAR: Progress ---
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Text(
@@ -83,6 +100,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
               const Spacer(flex: 1),
 
+              // --- QUESTION CARD ---
               Container(
                 padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
@@ -92,6 +110,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // --- Question Text ---
                     Text(
                       currentQuestion.text,
                       style: TextStyle(
@@ -103,7 +122,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    ...currentQuestion.getShuffledAnswers().map((answer) {
+                    // --- 4. USE THE "FROZEN" LIST ---
+                    ..._currentShuffledAnswers.map((answer) {
                       final isCorrect = answer == currentQuestion.answers[0];
                       final isSelected = answer == _selectedAnswer;
                       return AnswerButton(
@@ -115,6 +135,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       );
                     }),
 
+                    // --- "Next" Button (Conditional) ---
                     if (isAnswered)
                       Padding(
                         padding: const EdgeInsets.only(top: 20.0),
