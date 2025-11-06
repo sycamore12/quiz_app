@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quiz_app/data/dummy_questions.dart';
 import 'package:quiz_app/screens/results_screen.dart';
 import 'package:quiz_app/widgets/answer_button.dart';
+import 'package:quiz_app/widgets/quiz_background_painter.dart'; // Import the painter
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key, required this.userName});
@@ -61,97 +62,112 @@ class _QuizScreenState extends State<QuizScreen> {
     final bool isAnswered = _selectedAnswer != null;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          
-          // --- 1. WRAP THE COLUMN WITH SingleChildScrollView ---
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // --- TOP BAR: Progress ---
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: Text(
-                    '${_currentQuestionIndex + 1} of ${questions.length}',
-                    style: TextStyle(
-                      color: theme.colorScheme.onBackground.withOpacity(0.8),
-                      fontSize: 16,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                LinearProgressIndicator(
-                  value: (_currentQuestionIndex + 1) / questions.length,
-                  backgroundColor: Colors.grey.withOpacity(0.2),
-                  color: Colors.green.shade400,
-                  minHeight: 6,
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                
-                // --- 2. REPLACE Spacer WITH SizedBox ---
-                const SizedBox(height: 30),
+    // Determine colors for the CustomPainter based on current theme
+    final Color topBgColor = theme.colorScheme.primary; 
+    final Color bottomBgColor = theme.colorScheme.background;
 
-                // --- QUESTION CARD ---
-                Container(
-                  padding: const EdgeInsets.all(24.0),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+    // --- NEW STRUCTURE ---
+    // Use Material as the root to allow Stack to be behind the Scaffold
+    return Material(
+      child: Stack(
+        children: [
+          // --- 1. Custom Background Painter (covers edge-to-edge) ---
+          Positioned.fill(
+            child: CustomPaint(
+              painter: QuizBackgroundPainter(
+                topColor: topBgColor,
+                bottomColor: bottomBgColor,
+              ),
+            ),
+          ),
+
+          // --- 2. Transparent Scaffold on top ---
+          Scaffold(
+            backgroundColor: Colors.transparent, // Make scaffold see-through
+            // Use SafeArea to inset the content
+            body: SafeArea( 
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // --- Question Text ---
-                      Text(
-                        currentQuestion.text,
-                        style: TextStyle(
-                          color: theme.colorScheme.onSurface,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                      // --- TOP BAR: Progress ---
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          '${_currentQuestionIndex + 1} of ${questions.length}',
+                          style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white.withOpacity(0.8)
+                                : Colors.white.withOpacity(0.9),
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
+                      ),
+                      LinearProgressIndicator(
+                        value: (_currentQuestionIndex + 1) / questions.length,
+                        backgroundColor: Colors.grey.withOpacity(0.2),
+                        color: Colors.green.shade400,
+                        minHeight: 6,
+                        borderRadius: BorderRadius.circular(100),
                       ),
                       const SizedBox(height: 30),
 
-                      // --- Answer Buttons ---
-                      ..._currentShuffledAnswers.map((answer) {
-                        final isCorrect = answer == currentQuestion.answers[0];
-                        final isSelected = answer == _selectedAnswer;
-                        return AnswerButton(
-                          answerText: answer,
-                          isSelected: isSelected,
-                          isCorrect: isCorrect,
-                          isAnswered: isAnswered,
-                          onTap: () => _answerQuestion(answer),
-                        );
-                      }),
-
-                      // --- "Next" Button (Conditional) ---
-                      if (isAnswered)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 20.0),
-                          child: ElevatedButton(
-                            onPressed: _nextQuestion,
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                            ),
-                            child: const Text('Next'),
-                          ),
+                      // --- QUESTION CARD ---
+                      Container(
+                        padding: const EdgeInsets.all(24.0),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface, // Card color from theme
+                          borderRadius: BorderRadius.circular(20),
                         ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              currentQuestion.text,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 30),
+                            ..._currentShuffledAnswers.map((answer) {
+                              final isCorrect = answer == currentQuestion.answers[0];
+                              final isSelected = answer == _selectedAnswer;
+                              return AnswerButton(
+                                answerText: answer,
+                                isSelected: isSelected,
+                                isCorrect: isCorrect,
+                                isAnswered: isAnswered,
+                                onTap: () => _answerQuestion(answer),
+                              );
+                            }),
+                            if (isAnswered)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20.0),
+                                child: ElevatedButton(
+                                  onPressed: _nextQuestion,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                  ),
+                                  child: const Text('Next'),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
-                
-                // --- 3. REPLACE Spacer WITH SizedBox FOR BOTTOM PADDING ---
-                const SizedBox(height: 30),
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

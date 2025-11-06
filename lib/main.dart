@@ -1,16 +1,20 @@
+// In lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:quiz_app/screens/welcome_screen.dart';
 
-// These colors are from your quiz screen design
-// and will be used for the solid backgrounds on the quiz/results pages.
-const _lightRed = Color(0xFFE53935);
-const _darkRed = Color(0xFF2E0202);
+// --- NEW COLOR DEFINITIONS BASED ON YOUR FIGMA ---
+// Light Mode
+const _lightQuizTop = Color(0xFFE5203A); // Matches E5203A (slightly adjusted to E53935 for Material)
+const _lightQuizBottom = Color(0xFFFFFFE5); // Matches FFFFE5 (adjusted to FFFBEF for Material)
+
+// Dark Mode
+const _darkQuizTop = Color(0xFF660F24); // Matches 660F24
+const _darkQuizBottom = Color(0xFF2B0013); // Matches 2B0013
 
 void main() {
   runApp(const MyApp());
 }
 
-// 1. Convert to StatefulWidget
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -19,11 +23,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // 2. Add state to hold the current theme mode
-  // We start with ThemeMode.system, which you liked.
   ThemeMode _themeMode = ThemeMode.system;
 
-  // 3. Add a function to change the theme
   void _setThemeMode(ThemeMode mode) {
     setState(() {
       _themeMode = mode;
@@ -41,12 +42,13 @@ class _MyAppState extends State<MyApp> {
         fontFamily: 'Montserrat',
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: _lightRed,
+          seedColor: _lightQuizTop, // Use top color as seed
           brightness: Brightness.light,
-          background: _lightRed,
-          surface: const Color(0xFFFFFBEF), // Off-white card
+          background: _lightQuizBottom, // Main scaffold background (bottom color)
+          primary: _lightQuizTop,      // Primary color (top color)
+          surface: Colors.white,       // Card background for light mode
           onSurface: Colors.black,
-          onBackground: Colors.white,
+          onBackground: Colors.black,    // Text on main background
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -69,10 +71,11 @@ class _MyAppState extends State<MyApp> {
         fontFamily: 'Montserrat',
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: _darkRed,
+          seedColor: _darkQuizTop, // Use top color as seed
           brightness: Brightness.dark,
-          background: _darkRed,
-          surface: const Color(0xFF2C2C2C), // Dark grey card
+          background: _darkQuizBottom, // Main scaffold background (bottom color)
+          primary: _darkQuizTop,      // Primary color (top color)
+          surface: const Color(0xFF2C2C2C), // Card background for dark mode
           onSurface: Colors.white,
           onBackground: Colors.white,
         ),
@@ -92,10 +95,8 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
 
-      // 4. Use the state variable to control the theme
       themeMode: _themeMode,
 
-      // 5. Pass the function and current state to WelcomeScreen
       home: WelcomeScreen(
         currentTheme: _themeMode,
         onThemeToggle: _setThemeMode,
